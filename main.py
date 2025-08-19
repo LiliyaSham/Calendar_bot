@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
@@ -119,6 +122,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
