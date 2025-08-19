@@ -1,13 +1,12 @@
 import os
-from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Message
 from supabase import create_client
-import uvicorn
+import asyncio
 
 # --- Конфиг ---
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -119,4 +118,5 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+
     asyncio.run(main())
