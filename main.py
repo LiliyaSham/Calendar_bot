@@ -1,6 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
-
 import os
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
@@ -15,15 +12,6 @@ import asyncio
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
-# Диагностика
-print(f"🔹 TELEGRAM_BOT_TOKEN: {TELEGRAM_BOT_TOKEN}")
-print(f"🔹 SUPABASE_URL: {SUPABASE_URL}")
-print(f"🔹 SUPABASE_SERVICE_ROLE_KEY present: {bool(SUPABASE_SERVICE_ROLE_KEY)}")
-
-if not TELEGRAM_BOT_TOKEN:
-    raise ValueError("TELEGRAM_BOT_TOKEN not set!")
-
 
 # --- Инициализация ---
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
@@ -131,5 +119,6 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
