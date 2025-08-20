@@ -124,7 +124,7 @@ async def handle_free_text(message: Message):
             user_id = user_res.data[0]["id"]
         else:
             new_user = supabase_client.table("users") \
-                .insert({"telegram_id": str(message.from_user.id)}) \
+                .insert({"telegram_id": str(telegram_id)}) \
                 .execute()
             user_id = new_user.data[0]["id"]
 
@@ -161,6 +161,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
