@@ -148,8 +148,19 @@ async def handle_free_text(message: Message):
                        f"{'📝 ' + extracted['event_description'] if extracted['event_description'] else ''}")
 
     except Exception as e:
-        await message.reply("❌ Ошибка при сохранении в базу.")
-        print(f"Ошибка: {e}")
+    await message.reply("❌ Ошибка при сохранении в базу.")
+    print(f"🔹 User ID: {message.from_user.id}")
+    print(f"🔹 Extracted data: {extracted}")
+    print(f"🔹 Full error: {type(e).__name__}: {e}")
+    # Попробуем вывести больше контекста
+    try:
+        user_check = supabase_client.table("users") \
+            .select("id") \
+            .eq("telegram_id", str(message.from_user.id)) \
+            .execute()
+        print(f"🔹 User exists in DB: {bool(user_check.data)}")
+    except Exception as inner_e:
+        print(f"🔹 Failed to check user: {inner_e}")
 
 
 
@@ -162,3 +173,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
