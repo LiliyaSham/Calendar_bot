@@ -120,7 +120,7 @@ async def handle_free_text(message: Message):
             .eq("telegram_id", str(message.from_user.id)) \
             .execute()
 
-        if user_res:
+        if user_res.data:
             user_id = user_res.data[0]["id"]
         else:
             new_user = supabase_client.table("users") \
@@ -135,16 +135,17 @@ async def handle_free_text(message: Message):
             "event_description": extracted["event_description"],
             "start_datetime": extracted["start_datetime"],
             "end_datetime": extracted["end_datetime"],
-            "event_place": None,  # Пока не извлекаем место
+            "event_place": extracted["event_place"],
             "event_weekly": False
         }
 
         # Сохраняем
         supabase_client.table("events").insert(event_data).execute()
         await message.reply(f"✅ Событие добавлено:\n\n"
-                           f"**{extracted['event_title']}**\n"
-                           f"🕐 {extracted['start_datetime']}\n"
-                           f"{'📝 ' + extracted['event_description'] if extracted['event_description'] else ''}")
+                       f"**{extracted['event_title']}**\n"
+                       f"🕐 {extracted['start_datetime']}\n"
+                       f"{'📍 ' + extracted['event_place'] if extracted['event_place'] else ''}\n"
+                       f"{'📝 ' + extracted['event_description'] if extracted['event_description'] else ''}")
 
     except Exception as e:
         await message.reply("❌ Ошибка при сохранении в базу.")
@@ -161,9 +162,3 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
-
-
-
-
-
-
