@@ -94,6 +94,20 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+@dp.message(Command("start"))
+async def cmd_start(message: Message):
+    welcome_text = (
+        "👋 Привет! Я — <b>умный бот для управления событиями</b>.\n\n"
+        "📌 Просто напиши мне в свободной форме, когда и что у тебя запланировано, "
+        "а я сам извлеку название, дату, время и место события.\n\n"
+        "<b>Примеры:</b>\n"
+        "• <code>Завтра в 18:00 встреча с командой в Zoom</code>\n"
+        "• <code>Созвон с клиентом в четверг в 15:30</code>\n"
+        "• <code>Презентация проекта в офисе в 10:00</code>\n\n"
+        "✅ Я добавлю событие в календарь и подтвержу его!"
+    )
+    await message.answer(welcome_text, parse_mode="HTML")
+
 @dp.message(F.text)
 async def handle_free_text(message: Message):
     if message.text.startswith("/"):
@@ -162,3 +176,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
