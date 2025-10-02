@@ -10,6 +10,17 @@ from states import EventForm
 from utils import extract_event_data, extract_date_range, extract_event_to_delete, extract_edit_data
 
 
+def clean_null_values(data):
+    """Преобразует строки 'null' в Python None"""
+    cleaned = {}
+    for key, value in data.items():
+        if value == "null" or value == "" or value is None:
+            cleaned[key] = None
+        else:
+            cleaned[key] = value
+    return cleaned
+
+
 # --- Хендлер: старт и главное меню ---
 async def cmd_start(message: Message):
     # Убираем любую предыдущую клавиатуру
@@ -57,15 +68,75 @@ async def exit_add_event_mode(message: Message, state: FSMContext):
 async def handle_new_event(message: Message, state: FSMContext):
     await message.reply("🔍 Обрабатываю событие...")
 
+    # Получаем сохраненные данные из предыдущих сообщений
+    state_data = await state.get_data()
+    saved_event = state_data.get("partial_event", {})
+
+    # Извлекаем данные из текущего сообщения
     extracted = await extract_event_data(message.text)
+    
+    # Очищаем null значения
+    extracted = clean_null_values(extracted)
+    saved_event = clean_null_values(saved_event)
 
-    if not extracted["event_title"]:
-        await message.reply("❌ Не удалось распознать название события.\n\nПопробуйте еще раз или выйдите из режима добавления.", reply_markup=exit_add_kb)
+    # Объединяем сохраненные данные с новыми (новые имеют приоритет)
+    merged_event = {
+        "event_title": extracted["event_title"] or saved_event.get("event_title"),
+        "event_description": extracted["event_description"] or saved_event.get("event_description"),
+        "start_datetime": extracted["start_datetime"] or saved_event.get("start_datetime"),
+        "end_datetime": extracted["end_datetime"] or saved_event.get("end_datetime"),
+        "event_place": extracted["event_place"] or saved_event.get("event_place")
+    }
+
+    # Проверяем, что у нас есть минимально необходимые данные
+    missing_title = not merged_event["event_title"]
+    missing_datetime = not merged_event["start_datetime"]
+
+    if missing_title or missing_datetime:
+        # Сохраняем частичные данные для следующего сообщения
+        await state.update_data(partial_event=merged_event)
+        
+        # Формируем сообщение с уже собранными данными
+        collected_info = ""
+        has_collected_data = False
+        
+        if merged_event["event_title"]:
+            collected_info += f"• Название: <b>{merged_event['event_title']}</b>\n"
+            has_collected_data = True
+        if merged_event["start_datetime"]:
+            collected_info += f"• Дата/время: <b>{merged_event['start_datetime']}</b>\n"
+            has_collected_data = True
+        if merged_event["event_place"]:
+            collected_info += f"• Место: <b>{merged_event['event_place']}</b>\n"
+            has_collected_data = True
+        if merged_event["event_description"]:
+            collected_info += f"• Описание: <b>{merged_event['event_description']}</b>\n"
+            has_collected_data = True
+        
+        if has_collected_data:
+            collected_info = "📝 Уже собрано:\n" + collected_info
+        
+        if missing_title and missing_datetime:
+            error_msg = "❌ Не удалось распознать название события и дату/время начала.\n\n"
+            if has_collected_data:
+                error_msg += collected_info + "\n"
+            error_msg += "🔍 Введите название события и дату/время или выйдите из режима добавления."
+        elif missing_title:
+            error_msg = "❌ Не удалось распознать название события.\n\n"
+            if has_collected_data:
+                error_msg += collected_info + "\n"
+            error_msg += "🔍 Введите название события или выйдите из режима добавления."
+        elif missing_datetime:
+            error_msg = "❌ Не удалось распознать дату и время начала.\n\n"
+            if has_collected_data:
+                error_msg += collected_info + "\n"
+            error_msg += "🔍 Введите дату и время или выйдите из режима добавления."
+        
+        await message.reply(error_msg, parse_mode="HTML", reply_markup=exit_add_kb)
         return
 
-    if not extracted["start_datetime"]:
-        await message.reply("❌ Не удалось распознать дату и время начала.\n\nПопробуйте еще раз или выйдите из режима добавления.", reply_markup=exit_add_kb)
-        return
+    # Если все данные есть, показываем что получилось и сохраняем
+    extracted = clean_null_values(merged_event)
 
     # Получаем или создаём пользователя
     try:
@@ -105,6 +176,8 @@ async def handle_new_event(message: Message, state: FSMContext):
         )
 
     except Exception as e:
+        # Сохраняем данные для повторной попытки
+        await state.update_data(partial_event=extracted)
         await message.reply("❌ Ошибка при сохранении в базу.\n\nПопробуйте еще раз или выйдите из режима добавления.", reply_markup=exit_add_kb)
         print(f"Ошибка: {e}")
         return
@@ -513,7 +586,9 @@ async def confirm_edit(message: Message, state: FSMContext):
             print(f"Ошибка: {e}")
 
         await state.clear()
+        await message.answer("Что дальше?", reply_markup=main_menu)
         return
 
     else:
         await message.reply("Пожалуйста, выберите: ✅ Да или ❌ Нет")
+
