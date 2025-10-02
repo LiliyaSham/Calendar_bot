@@ -8,3 +8,5 @@ services:
         value: {{SUPABASE_SERVICE_ROLE_KEY}}
       - key: TELEGRAM_BOT_TOKEN
         value: {{TELEGRAM_BOT_TOKEN}}
+      - key: DEEPSEEK_API_KEY
+        value: {{DEEPSEEK_API_KEY}}
