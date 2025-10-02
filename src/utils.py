@@ -3,6 +3,17 @@ import json
 from datetime import datetime
 from config import DEEPSEEK_API_KEY, DEEPSEEK_URL
 
+
+def clean_api_response(data):
+    """Очищает ответ API от строковых 'null' значений"""
+    cleaned = {}
+    for key, value in data.items():
+        if value == "null" or value == "" or not value:
+            cleaned[key] = None
+        else:
+            cleaned[key] = value
+    return cleaned
+
 # --- Функция: извлечение данных о событии ---
 async def extract_event_data(text: str) -> dict:
     today = datetime.now().strftime('%Y-%m-%d')
@@ -46,13 +57,14 @@ async def extract_event_data(text: str) -> dict:
             content = data["choices"][0]["message"]["content"]
             parsed = json.loads(content)
 
-            return {
+            result = {
                 "event_title": parsed.get("event_title"),
                 "event_description": parsed.get("event_description"),
                 "start_datetime": parsed.get("start_datetime"),
                 "end_datetime": parsed.get("end_datetime"),
                 "event_place": parsed.get("event_place")
             }
+            return clean_api_response(result)
         except Exception as e:
             print(f"Ошибка при обращении к DeepSeek: {e}")
             return {
@@ -120,13 +132,14 @@ async def extract_date_range(text: str) -> dict:
             content = data["choices"][0]["message"]["content"]
             parsed = json.loads(content)
 
-            return {
+            result = {
                 "start_date": parsed.get("start_date"),
                 "end_date": parsed.get("end_date"),
                 "start_time": parsed.get("start_time"),
                 "end_time": parsed.get("end_time"),
                 "exact_time": parsed.get("exact_time")
             }
+            return clean_api_response(result)
         except Exception as e:
             print(f"Ошибка при извлечении диапазона: {e}")
             return {
@@ -189,11 +202,12 @@ async def extract_event_to_delete(text: str) -> dict:
             content = data["choices"][0]["message"]["content"]
             parsed = json.loads(content)
 
-            return {
+            result = {
                 "event_title": parsed.get("event_title"),
                 "start_date": parsed.get("start_date"),
                 "exact_time": parsed.get("exact_time")
             }
+            return clean_api_response(result)
         except Exception as e:
             print(f"Ошибка при извлечении данных для удаления: {e}")
             return {"event_title": None, "start_date": None, "exact_time": None}
@@ -257,13 +271,14 @@ async def extract_edit_data(text: str) -> dict:
                     return dt_str
                 return None
 
-            return {
+            result = {
                 "event_title": parsed.get("event_title"),
                 "event_description": parsed.get("event_description"),
                 "start_datetime": validate_dt(parsed.get("start_datetime")),
                 "end_datetime": validate_dt(parsed.get("end_datetime")),
                 "event_place": parsed.get("event_place")
             }
+            return clean_api_response(result)
         except Exception as e:
             print(f"Ошибка при извлечении данных для редактирования: {e}")
             return {
