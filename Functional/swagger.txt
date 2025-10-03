@@ -1,0 +1,192 @@
+openapi: 3.0.4
+info:
+  title: Swagger CalendarBot - OpenAPI 3.0
+  description: |-
+    REST API для ИИ-агента CalendarBot, который помогает добавлять события в календарь, получать список событий за определенный временной промежуток, а также редактировать и удалять события.
+
+    Полезные ссылки:
+    - [Репозиторий CalendarBot на GitHub](https://github.com/LiliyaSham/Calendar_bot.git)
+    
+  
+  contact:
+    email: leelia@mail.ru
+  
+  version: 1.0.0
+
+
+servers:
+  - url: https://api.eventbot.example/v1
+tags:
+  - name: event
+    description: Группа методов для работы с событиями в календаре
+  - name: user
+    description: Группа методов для работы с пользователями
+
+paths:
+  /event:
+    post:
+      tags:
+        - event
+      summary: Создание события в календаре.
+      description: Добавление в календарь события по его названию и времени начала (обязательные реквизиты), а также его времени окончания, даты проведения (необязательные реквизиты)
+      requestBody:
+        description: Параметры метода для создания записи о событии
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        '201':
+          description: Событие добавлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+
+
+components:
+  schemas:
+  
+    EventRequest:
+      type: object
+      required:
+        - event_title
+        - start_datetime
+      properties:
+        event_title:
+          type: string
+          example: "Встреча с командой"
+        event_description:
+          type: string
+          nullable: true
+          example: "Обсудим релиз"
+        start_datetime:
+          type: string
+          format: date-time
+          example: "2025-09-14T18:00:00Z"
+        end_datetime:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-09-14T19:30:00Z"
+        event_place:
+          type: string
+          nullable: true
+          example: "Zoom"
+    
+  
+    EventResponse:
+      type: object
+      required:
+        - id
+        - event_title
+        - start_datetime
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          description: Уникальный идентификатор события
+        event_title:
+          type: string
+          example: "Встреча с командой"
+          description: Название события
+        event_description:
+          type: string
+          nullable: true
+          example: "Обсудим релиз"
+          description: Описание события
+        start_datetime:
+          type: string
+          format: date-time
+          example: "2025-09-14T18:00:00Z"
+          description: Дата и время начала события
+        end_datetime:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-09-14T19:30:00Z"
+          description: Дата и время окончания события
+        event_place:
+          type: string
+          nullable: true
+          example: "Zoom"
+          description: Место проведения
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-09-13T15:30:00Z"
+          description: Время создания события
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-09-14T10:00:00Z"
+          description: Время последнего обновления
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-09-14T10:15:00Z"
+          description: Время удаления (если применимо)
+
+
+
+components:
+  schemas:
+    Event:
+      type: object
+      required:
+        - id
+        - event_title
+        - start_datetime
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          description: Уникальный идентификатор события
+        event_title:
+          type: string
+          example: "Встреча с командой"
+          description: Название события
+        event_description:
+          type: string
+          nullable: true
+          example: "Обсудим релиз"
+          description: Описание события
+        start_datetime:
+          type: string
+          format: date-time
+          example: "2025-09-14T18:00:00Z"
+          description: Дата и время начала события
+        end_datetime:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-09-14T19:30:00Z"
+          description: Дата и время окончания события
+        event_place:
+          type: string
+          nullable: true
+          example: "Zoom"
+          description: Место проведения
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-09-13T15:30:00Z"
+          description: Время создания события
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-09-14T10:00:00Z"
+          description: Время последнего обновления
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-09-14T10:15:00Z"
+          description: Время удаления (если применимо)
+
+
